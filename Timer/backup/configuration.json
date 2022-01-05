@@ -1,0 +1,29 @@
+[
+  {
+    "Name": "Stoper",
+    "IsInterval": false,
+    "SeriesInCyle": 1,
+    "Cycles": 1,
+    "UptimeInSeconds": 0,
+    "DowntimeInSeconds": 0,
+    "RestBetweenCyclesInSeconds": 0
+  },
+  {
+    "Name": "Interwa³",
+    "IsInterval": true,
+    "SeriesInCyle": 6,
+    "Cycles": 3,
+    "UptimeInSeconds": 60,
+    "DowntimeInSeconds": 20,
+    "RestBetweenCyclesInSeconds": 180
+  },
+  {
+    "Name": "Pomodoro",
+    "IsInterval": true,
+    "SeriesInCyle": 3,
+    "Cycles": 2,
+    "UptimeInSeconds": 1500,
+    "DowntimeInSeconds": 300,
+    "RestBetweenCyclesInSeconds": 1800
+  }
+]

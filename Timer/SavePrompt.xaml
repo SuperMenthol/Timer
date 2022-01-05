@@ -1,0 +1,15 @@
+﻿<Window x:Class="MainSpace.SavePrompt"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MainSpace"
+        mc:Ignorable="d"
+        Title="Zapisz nową konfigurację" Height="100" Width="300" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
+    <Grid>
+        <TextBlock Margin="5,5,5,60">Nazwa konfiguracji:</TextBlock>
+        <TextBox Name="NameBox" Margin="5,25,5,35"></TextBox>
+        <Button Name="SaveBtn" Margin="5,55,170,5" Click="SaveBtn_Click">Zapisz</Button>
+        <Button Name="ExitBtn" Margin="170,55,5,5" Click="ExitBtn_Click">Anuluj</Button>
+    </Grid>
+</Window>
