@@ -1,6 +1,8 @@
 ﻿using MainSpace.Controllers;
+using MainSpace.ProgramConfigurations;
 using MainSpace.Enums;
 using System;
+using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,25 +19,13 @@ namespace MainSpace
 
         public MainWindow()
         {
+            this.DataContext = Context.GetContext();
             InitializeComponent();
-            InitializeModeBox();
-            this.DataContext = TimeComboBoxValue.Values;
-        }
-
-        private void InitializeModeBox()
-        {
-            ModeBox.ItemsSource = ConfigurationController.GetAllConfigurations();
-            ModeBox.SelectedIndex = 1;
-        }
-
-        private void EnableControls(bool enabled)
-        {
-            // rest of the controls are bound to save button
-            SaveBtn.IsEnabled = enabled;
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            //ResetBtn_Click(this, new RoutedEventArgs());
             if (e.AddedItems.Count > 0) LoadTimer((TimerConfiguration)ModeBox.SelectedItem);
         }
 
@@ -67,14 +57,20 @@ namespace MainSpace
             ErrorPrompt.Visibility = Visibility.Hidden;
         }
 
-        private void StartAtTbx_GotFocus(object sender, RoutedEventArgs e)
+        private TimerConfiguration GetConfigurationFromUI()
         {
-            HideFormatPrompt();
-        }
+            var newConfiguration = new TimerConfiguration()
+            {
+                TimerType = Context.GetContext().CurrentConfiguration.TimerType,
+                SeriesInCycle = (int)SeriesBox.Value,
+                Cycles = (int)CycleBox.Value,
+                UptimeInSeconds = (int)ActiveTimeBox.Value * _uptimeMultiplier,
+                DowntimeInSeconds = (int)DowntimeBox.Value * _downtimeMultiplier,
+                RestBetweenCyclesInSeconds = (int)CycleRestBox.Value * _restMultiplier
+            };
 
-        private void StartAt_Checked(object sender, RoutedEventArgs e)
-        {
-            if (!(bool)StartAt.IsChecked) HideFormatPrompt();
+            ConfigurationController.UsedConfiguration = newConfiguration;
+            return newConfiguration;
         }
 
         #region control-handlers
@@ -87,10 +83,12 @@ namespace MainSpace
                     StartAtTbx.Text, 
                     StartInTimeBox.IsEnabled ? StartInTimeBox.SelectedIndex == 0 : null));
             }
-            StartAt.IsEnabled = TimerManager.IsTimerSet;
+            else if (!TimerManager.IsTimerSet)
+            {
+                TimerManager.LoadTimer(GetConfigurationFromUI());
+            }
 
             _started = !_started;
-            EnableControls(!_started);
 
             ActionBtn.Content = !_started ? "Start" : "Pauza";
             TimerManager.PauseUnpause(_started);
@@ -99,7 +97,6 @@ namespace MainSpace
         private void ResetBtn_Click(object sender, RoutedEventArgs e)
         {
             TimerManager.Reset();
-            EnableControls(true);
             StartAt.IsEnabled = true;
             _started = false;
 
@@ -113,15 +110,7 @@ namespace MainSpace
 
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
-            var newConfiguration = new TimerConfiguration()
-            {
-                TimerType = (int)TimerType.Interval,
-                SeriesInCycle = (int)SeriesBox.Value,
-                Cycles = (int)CycleBox.Value,
-                UptimeInSeconds = (int)ActiveTimeBox.Value * _uptimeMultiplier,
-                DowntimeInSeconds = (int)DowntimeBox.Value * _downtimeMultiplier,
-                RestBetweenCyclesInSeconds = (int)CycleRestBox.Value * _restMultiplier
-            };
+            var newConfiguration = GetConfigurationFromUI();
 
             var saveBox = new SavePrompt(newConfiguration);
             saveBox.ShowDialog();
@@ -129,47 +118,6 @@ namespace MainSpace
             {
                 newConfiguration.Name = saveBox.NameBox.Text;
                 ConfigurationController.SaveConfiguration(newConfiguration);
-                InitializeModeBox();
-            }
-        }
-
-        private void DowntimeBox_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            if (!TimerManager.IsTimerSet)
-            {
-                TimerManager.Configuration.DowntimeInSeconds = (int)e.NewValue * _downtimeMultiplier;
-            }
-        }
-
-        private void ActiveTimeBox_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            if (!TimerManager.IsTimerSet)
-            {
-                TimerManager.Configuration.UptimeInSeconds = (int)e.NewValue * _uptimeMultiplier;
-            }
-        }
-
-        private void CycleRestBox_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            if (!TimerManager.IsTimerSet)
-            {
-                TimerManager.Configuration.RestBetweenCyclesInSeconds = (int)e.NewValue * _restMultiplier;
-            }
-        }
-
-        private void SeriesBox_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            if (!TimerManager.IsTimerSet)
-            {
-                TimerManager.Configuration.SeriesInCycle = (int)e.NewValue;
-            }
-        }
-
-        private void CycleBox_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            if (!TimerManager.IsTimerSet)
-            {
-                TimerManager.Configuration.Cycles = (int)e.NewValue;
             }
         }
 
@@ -195,6 +143,16 @@ namespace MainSpace
                 DisplayFormatPrompt();
             }
         }
+
+        private void StartAtTbx_GotFocus(object sender, RoutedEventArgs e)
+        {
+            HideFormatPrompt();
+        }
+
+        private void StartAt_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!(bool)StartAt.IsChecked) HideFormatPrompt();
+        }
         #endregion control-handlers
     }
 
@@ -202,10 +160,16 @@ namespace MainSpace
     {
         public static TimerConfiguration Configuration;
         private static Timer _timer;
+        private static Context _context;
 
         public static bool IsTimerSet
         {
             get { return _isTimerSet; }
+            private set 
+            { 
+                _isTimerSet = value;
+                _context.CanChangeTimer = !value;
+            }
         }
 
         private static bool _isTimerSet = false;
@@ -225,6 +189,7 @@ namespace MainSpace
         {
             Configuration = new TimerConfiguration();
             _timer = new Timer() { AutoReset = true, Enabled = false };
+            _context = Context.GetContext();
 
             MainTextBoxController._mainBox = (TextBox)Application.Current.MainWindow.FindName("MainTimeBox");
             MainTextBoxController.mainWindowDispatcher = Application.Current.MainWindow.Dispatcher;
@@ -238,10 +203,7 @@ namespace MainSpace
 
         public static void PauseUnpause(bool running = true)
         {
-            if (!_isTimerSet)
-            {
-                _isTimerSet = true;
-            }
+            if (!_isTimerSet) IsTimerSet = true;
 
             _timer.Enabled = running;
 
@@ -273,26 +235,29 @@ namespace MainSpace
 
                 _timer.Start();
             }
-            else _isTimerSet = false;
+            else IsTimerSet = false;
         }
 
         private static void ZeroVariables()
         {
-            _currentAction = ActionType.Action;
-
             _actionCount = 0;
             _cyclesCount = 0;
 
+            _startTime = new TimeOnly();
             _activeTime = TimeSpan.Zero;
             _targetTime = new TimeOnly();
             _timeLeft = TimeSpan.Zero;
+
+            _currentAction = ActionType.Action;
         }
 
         private static void ReapplyElapsedEvent()
         {
             _timer.Elapsed -= OnElapsed_Action_Interval;
             _timer.Elapsed -= OnElapsed_Action_Stopwatch;
-            _timer.Elapsed += Configuration.TimerType == (int)TimerType.Stopwatch ? OnElapsed_Action_Stopwatch : OnElapsed_Action_Interval;
+            _timer.Elapsed += Configuration.TimerType == (int)TimerType.Stopwatch ? 
+                OnElapsed_Action_Stopwatch
+                : OnElapsed_Action_Interval;
         }
 
         private static void OnElapsed_Action_Stopwatch(object source, ElapsedEventArgs e)

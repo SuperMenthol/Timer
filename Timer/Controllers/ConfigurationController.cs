@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MainSpace.ProgramConfigurations;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +15,7 @@ namespace MainSpace.Controllers
             set { _usedConfiguration = value; }
         }
 
-        private static TimerConfiguration _usedConfiguration;
+        private static TimerConfiguration _usedConfiguration = new TimerConfiguration();
         private static string _configurationFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "configuration.json");
 
         public static List<TimerConfiguration> GetAllConfigurations()

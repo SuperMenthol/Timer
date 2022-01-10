@@ -1,4 +1,4 @@
-﻿namespace MainSpace
+﻿namespace MainSpace.ProgramConfigurations
 {
     public class TimerConfiguration
     {

@@ -25,5 +25,14 @@
         "UptimeInSeconds": 1500,
         "DowntimeInSeconds": 300,
         "RestBetweenCyclesInSeconds": 1800
+    },
+    {
+        "Name": "Interwał - 2x3 - 3600s pracy, 1200s przerwy, 180s odpoczynku",
+        "TimerType": 1,
+        "SeriesInCycle": 2,
+        "Cycles": 3,
+        "UptimeInSeconds": 3600,
+        "DowntimeInSeconds": 1200,
+        "RestBetweenCyclesInSeconds": 180
     }
 ]

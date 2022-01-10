@@ -16,46 +16,64 @@
         <TextBlock Width="190" Height="20" Margin="10,260,200,120">Długość aktywności:</TextBlock>
         <TextBlock Width="190" Height="20" Margin="200,260,10,120" TextAlignment="Right">Długość przerwy między seriami:</TextBlock>
         <TextBlock Width="190" Height="20" Margin="200,280,10,30" TextAlignment="Right">Długość przerwy między cyklami:</TextBlock>
-        <ComboBox Width="380" Height="50" Margin="10,20,10,395" Name="ModeBox" IsEnabled="{Binding ElementName=SaveBtn, Path=IsEnabled}"
+        <ComboBox Width="380" Height="50" Margin="10,20,10,395" Name="ModeBox"
             DisplayMemberPath="Name" 
             SelectedValuePath="Name" 
-            SelectionChanged="ComboBox_SelectionChanged"></ComboBox>
+            SelectionChanged="ComboBox_SelectionChanged" ItemsSource="{Binding Path=AllConfigurations}"></ComboBox>
         <TextBox Width="380" Height="80" Margin="10,80,10,285" IsEnabled="False" Name="MainTimeBox" TextAlignment="Center" VerticalContentAlignment="Center" FontSize="48"></TextBox>
-        <CheckBox x:Name="StartAt" Margin="10,190,300,260" FontSize="18" VerticalContentAlignment="Center" Checked="StartAt_Checked">Zacznij</CheckBox>
-        <ComboBox Name="StartMode" Margin="100,190,250,260" SelectedIndex="0" VerticalContentAlignment="Center" IsEnabled="{Binding ElementName=StartAt, Path=IsChecked}" FontSize="18">
+        <CheckBox x:Name="StartAt" Margin="10,190,300,260" FontSize="18" VerticalContentAlignment="Center" Checked="StartAt_Checked" IsEnabled="{Binding Path=CanChangeTimer}">Zacznij</CheckBox>
+        <ComboBox Name="StartMode" Margin="100,190,250,260" SelectedIndex="0" VerticalContentAlignment="Center" IsEnabled="{Binding Path=CanChangeTimer}" FontSize="18">
             <ComboBoxItem>o</ComboBoxItem>
             <ComboBoxItem>za</ComboBoxItem>
         </ComboBox>
-        <TextBox Name="StartAtTbx" Margin="160,190,150,260" TextAlignment="Right" FontSize="20" IsEnabled="{Binding ElementName=StartAt, Path=IsChecked}" LostFocus="StartAtTbx_LostFocus" GotFocus="StartAtTbx_GotFocus"></TextBox>
+        <TextBox Name="StartAtTbx" 
+                 Margin="160,190,150,260" 
+                 TextAlignment="Right" FontSize="20"
+                 IsEnabled="{Binding Path=CanChangeTimer}" 
+                 LostFocus="StartAtTbx_LostFocus" GotFocus="StartAtTbx_GotFocus"></TextBox>
         <TextBlock Name="ErrorPrompt" FontSize="12" Margin="120,230,90,240" Foreground="Red" Visibility="Hidden">Wprowadź czas w formacie hh:mm</TextBlock>
         <ComboBox Name="StartInTimeBox" 
                   Margin="260,190,50,260" 
                   VerticalContentAlignment="Center" FontSize="18"
-                  SelectedIndex="0" ItemsSource="{Binding}"
-                  IsEnabled="{Binding ElementName=StartMode, Path=SelectedIndex}">
+                  SelectedIndex="0" ItemsSource="{Binding Path=TimeComboBoxValues}"
+                  IsEnabled="{Binding Source=CanChangeTimer}">
         </ComboBox>
-        <wpfTool:IntegerUpDown Width="170" Height="40" Margin="10,220,220,160" Value="1" Minimum="1" Maximum="12" Name="SeriesBox" ValueChanged="SeriesBox_ValueChanged" IsEnabled="{Binding ElementName=SaveBtn, Path=IsEnabled}"></wpfTool:IntegerUpDown>
-        <wpfTool:IntegerUpDown Width="170" Height="40" Margin="220,220,10,160" Value="1" Minimum="1" Maximum="12" Name="CycleBox" ValueChanged="CycleBox_ValueChanged" IsEnabled="{Binding ElementName=SaveBtn, Path=IsEnabled}"></wpfTool:IntegerUpDown>
-        <wpfTool:IntegerUpDown Width="70" Height="30" Margin="10,290,320,100" Value="60" Minimum="3" Maximum="900" Name="ActiveTimeBox" FontSize="20" ValueChanged="ActiveTimeBox_ValueChanged" IsEnabled="{Binding ElementName=SaveBtn, Path=IsEnabled}"></wpfTool:IntegerUpDown>
+        <wpfTool:IntegerUpDown Width="170" Height="40" Margin="10,220,220,160" 
+                               Value="{Binding Path=CurrentConfiguration.SeriesInCycle}" Minimum="1" Maximum="12" 
+                               Name="SeriesBox" 
+                               IsEnabled="{Binding Path=CanChangeTimer}"></wpfTool:IntegerUpDown>
+        <wpfTool:IntegerUpDown Width="170" Height="40" Margin="220,220,10,160" 
+                               Value="{Binding Path=CurrentConfiguration.Cycles}" Minimum="1" Maximum="12" 
+                               Name="CycleBox"
+                               IsEnabled="{Binding Source=CanChangeTimer}"></wpfTool:IntegerUpDown>
+        <wpfTool:IntegerUpDown Width="70" Height="30" Margin="10,290,320,100" 
+                               Value="{Binding Path=CurrentConfiguration.UptimeInSeconds}" Minimum="3" Maximum="2500" 
+                               Name="ActiveTimeBox" FontSize="20" IsEnabled="{Binding Path=CanChangeTimer}"></wpfTool:IntegerUpDown>
         <ComboBox Name="ActiveTimeUnit" SelectionChanged="ActiveTimeUnit_SelectionChanged" 
                   Width="100" Height="30" Margin="90,290,210,100" 
-                  ItemsSource="{Binding}" SelectedIndex="0"
+                  ItemsSource="{Binding Path=TimeComboBoxValues}" SelectedIndex="0"
                   FontSize="20" VerticalContentAlignment="Center" 
-                  IsEnabled="{Binding ElementName=SaveBtn, Path=IsEnabled}">
+                  IsEnabled="{Binding Path=CanChangeTimer}">
         </ComboBox>
-        <wpfTool:IntegerUpDown Width="70" Height="30" Margin="200,290,105,100" Value="60" Minimum="3" Maximum="900" Name="DowntimeBox" FontSize="20" ValueChanged="DowntimeBox_ValueChanged" IsEnabled="{Binding ElementName=SaveBtn, Path=IsEnabled}"></wpfTool:IntegerUpDown>
+        <wpfTool:IntegerUpDown Width="70" Height="30" Margin="200,290,105,100" 
+                               Value="{Binding Path=CurrentConfiguration.DowntimeInSeconds}" Minimum="3" Maximum="2000" 
+                               Name="DowntimeBox" FontSize="20" 
+                               IsEnabled="{Binding Path=CanChangeTimer}"></wpfTool:IntegerUpDown>
         <ComboBox Name="DowntimeUnit" SelectionChanged="DowntimeUnit_SelectionChanged"
                   Width="100" Height="30" Margin="290,290,10,100" 
-                  ItemsSource="{Binding}" SelectedIndex="0" 
+                  ItemsSource="{Binding Path=TimeComboBoxValues}" SelectedIndex="0" 
                   FontSize="20" VerticalContentAlignment="Center" 
-                  IsEnabled="{Binding ElementName=SaveBtn, Path=IsEnabled}">
+                  IsEnabled="{Binding Path=CanChangeTimer}">
         </ComboBox>
-        <wpfTool:IntegerUpDown Width="70" Height="30" Margin="200,380,105,70" Value="60" Minimum="3" Maximum="900" Name="CycleRestBox" FontSize="20" ValueChanged="CycleRestBox_ValueChanged" IsEnabled="{Binding ElementName=SaveBtn, Path=IsEnabled}"></wpfTool:IntegerUpDown>
+        <wpfTool:IntegerUpDown Width="70" Height="30" Margin="200,380,105,70" 
+                               Value="{Binding Path=CurrentConfiguration.RestBetweenCyclesInSeconds}" Minimum="3" Maximum="2000" 
+                               Name="CycleRestBox" FontSize="20" 
+                               IsEnabled="{Binding Path=CanChangeTimer}"></wpfTool:IntegerUpDown>
         <ComboBox Name="RestUnit" SelectionChanged="RestUnit_SelectionChanged"
                   Width="100" Height="30" Margin="290,380,10,70" 
-                  ItemsSource="{Binding}" SelectedIndex="0" 
+                  ItemsSource="{Binding Path=TimeComboBoxValues}" SelectedIndex="0" 
                   FontSize="20" VerticalContentAlignment="Center" 
-                  IsEnabled="{Binding ElementName=SaveBtn, Path=IsEnabled}">
+                  IsEnabled="{Binding Path=CanChangeTimer}">
         </ComboBox>
         
         <Button x:Name="ActionBtn" Width="100" Height="40" Margin="30,430,270,10" Click="ActionBtn_Click">Start</Button>
